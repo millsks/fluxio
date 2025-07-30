@@ -27,7 +27,7 @@ If applicable, add screenshots to help explain your problem.
 
 ## Environment
 **Desktop (please complete the following information):**
-- OS: [e.g. iOS]
+- OS: [e.g. Windows 10, macOS 12.0, Ubuntu 20.04]
 - Browser [e.g. chrome, safari]
 - Version [e.g. 22]
 
