@@ -362,3 +362,19 @@ exclude_lines = [
 
 [tool.coverage.html]
 directory = "htmlcov"
+
+# Bandit security linting configuration
+[tool.bandit]
+exclude_dirs = ["backend/tests"]
+skips = ["B101", "B601"]  # Skip assert_used and shell_injection_process for tests
+
+# Pydocstyle documentation style checking
+[tool.pydocstyle]
+convention = "google"
+add_ignore = ["D100", "D104", "D107"]  # Missing docstrings in modules, packages, and __init__
+match_dir = "^(?!tests).*"  # Exclude tests directory
+
+# Codespell configuration
+[tool.codespell]
+skip = "*.git,*.pyc,*.pdf,*.svg,*.lock,*.toml"
+ignore-words-list = "nd,te,ba"
