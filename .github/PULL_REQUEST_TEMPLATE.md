@@ -2,7 +2,8 @@
 
 Please include a summary of the changes and the related issue. 
 
-Fixes # (issue)
+<!-- Use Fixes or Closes to auto close a related issue after the PR is merged. -->
+Fixes #(issue-number)
 
 ## Type of Change
 
