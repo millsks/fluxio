@@ -1,11 +1,3 @@
----
-name: Pull Request
-about: Submit a pull request to contribute code or documentation
-title: '[PR] '
-labels: ''
-assignees: ''
----
-
 ## Description
 
 Please include a summary of the changes and the related issue. 
