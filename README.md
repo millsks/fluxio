@@ -1,8 +1,6 @@
-<!-- Place your logo image below this line
 <!-- <p align="center">
   <img src="./docs/images/fluxio-logo-600.png" alt="Fluxio Logo" width="320"/>
 </p> -->
--->
 
 # Fluxio: Orchestrate, Route, and Visualize Your Data Journeys
 
