@@ -83,7 +83,6 @@ dev = [
     "pytest-cov>=4.1.0",
     "pytest-mock>=3.11.0",
     "pytest-asyncio>=0.21.0",
-    "httpx>=0.25.0",
     
     # Code quality
     "ruff>=0.1.6",
@@ -101,7 +100,6 @@ test = [
     "pytest-cov>=4.1.0",
     "pytest-mock>=3.11.0",
     "pytest-asyncio>=0.21.0",
-    "httpx>=0.25.0",
 ]
 
 docs = [
@@ -264,39 +262,6 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
-
-# Black configuration (removed - replaced by ruff format)
-# [tool.black]
-
-# isort configuration (removed - replaced by ruff)
-# [tool.isort]
-
-# Black configuration
-[tool.black]
-line-length = 88
-target-version = ['py312']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | build
-  | dist
-)/
-'''
-
-# isort configuration
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-line_length = 88
-known_first_party = ["fluxio"]
-known_third_party = ["kedro", "fastapi", "mlflow", "arq"]
 
 # mypy configuration
 [tool.mypy]
