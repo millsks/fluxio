@@ -182,7 +182,11 @@ frontend-test = { cmd = "npm test", cwd = "frontend" }
 frontend-lint = { cmd = "npm run lint", cwd = "frontend" }
 
 # Full stack tasks
-dev = ["install-backend", "install-frontend", "backend-dev", "frontend-dev"]
+dev = [
+    "install-backend",
+    "install-frontend",
+    { cmd = "uvicorn fluxio.app:app --reload --host 0.0.0.0 --port 8000 & npm run dev --prefix frontend & wait" }
+]
 build = ["install-backend", "frontend-build"]
 test-all = ["test", "frontend-test"]
 lint-all = ["lint", "frontend-lint"]
