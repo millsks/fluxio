@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
 
 [project]
 name = "fluxio"
-version = "0.1.0"
+dynamic = ["version"]
 description = "A modern data pipeline platform that empowers you to design, automate, and monitor complex data flows"
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -119,12 +119,26 @@ Repository = "https://github.com/millsks/fluxio"
 [project.scripts]
 fluxio = "fluxio.cli:main"
 
-[tool.setuptools.packages.find]
-where = ["backend"]
-include = ["fluxio*"]
+# Hatch build configuration
+[tool.hatch.version]
+source = "vcs"
 
-[tool.setuptools.package-data]
-fluxio = ["py.typed"]
+[tool.hatch.version.raw-options]
+local_scheme = "no-local-version"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "backend/src/fluxio/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["backend/src/fluxio"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/backend/src/fluxio",
+    "/README.md",
+    "/LICENSE",
+    "/pyproject.toml",
+]
 
 # Pixi configuration for environment and task management
 [tool.pixi.project]
@@ -158,9 +172,9 @@ install-backend = "pip install -e ."
 install-dev = "pip install -e .[dev]"
 test = "pytest backend/tests/ -v --cov=fluxio --cov-report=html --cov-report=term-missing"
 test-quick = "pytest backend/tests/ -x --tb=short"
-lint = "ruff check backend/ && mypy backend/"
-format = "ruff format backend/ && ruff check --fix backend/"
-type-check = "mypy backend/"
+lint = "ruff check backend/src/ && mypy backend/src/"
+format = "ruff format backend/src/ && ruff check --fix backend/src/"
+type-check = "mypy backend/src/"
 
 # Frontend tasks
 install-frontend = { cmd = "npm install", cwd = "frontend" }
@@ -181,22 +195,22 @@ stop-redis = "redis-cli shutdown"
 start-mlflow = "mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlflow-artifacts --host 0.0.0.0 --port 5000"
 
 # Backend server tasks
-backend-dev = { cmd = "uvicorn fluxio.app:app --reload --host 0.0.0.0 --port 8000", env = { ENVIRONMENT = "development" }, cwd = "backend" }
-backend-prod = { cmd = "uvicorn fluxio.app:app --host 0.0.0.0 --port 8000", env = { ENVIRONMENT = "production" }, cwd = "backend" }
-worker = { cmd = "python -m arq fluxio.worker.WorkerSettings", cwd = "backend" }
+backend-dev = { cmd = "uvicorn fluxio.app:app --reload --host 0.0.0.0 --port 8000", env = { ENVIRONMENT = "development" }, cwd = "backend/src" }
+backend-prod = { cmd = "uvicorn fluxio.app:app --host 0.0.0.0 --port 8000", env = { ENVIRONMENT = "production" }, cwd = "backend/src" }
+worker = { cmd = "python -m arq fluxio.worker.WorkerSettings", cwd = "backend/src" }
 
 # Kedro pipeline tasks
-kedro-run = { cmd = "kedro run", cwd = "backend" }
-kedro-jupyter = { cmd = "kedro jupyter notebook", cwd = "backend" }
-kedro-viz = { cmd = "kedro viz", cwd = "backend" }
+kedro-run = { cmd = "kedro run", cwd = "backend/src" }
+kedro-jupyter = { cmd = "kedro jupyter notebook", cwd = "backend/src" }
+kedro-viz = { cmd = "kedro viz", cwd = "backend/src" }
 
 # Documentation
 docs-build = "sphinx-build -b html docs/ docs/_build/html"
 docs-serve = "python -m http.server 8080 --directory docs/_build/html"
 
 # Database management
-db-upgrade = { cmd = "alembic upgrade head", cwd = "backend" }
-db-migrate = { cmd = "alembic revision --autogenerate", cwd = "backend" }
+db-upgrade = { cmd = "alembic upgrade head", cwd = "backend/src" }
+db-migrate = { cmd = "alembic revision --autogenerate", cwd = "backend/src" }
 
 # Environment management
 clean = "find . -type d -name '__pycache__' -exec rm -rf {} + && find . -name '*.pyc' -delete && rm -rf .pytest_cache .coverage htmlcov dist build *.egg-info"
@@ -211,7 +225,7 @@ test = { features = ["dev"], solve-group = "default" }
 [tool.ruff]
 target-version = "py312"
 line-length = 88
-src = ["backend"]
+src = ["backend/src"]
 
 [tool.ruff.lint]
 select = [
@@ -239,6 +253,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "backend/tests/**/*" = ["S101", "ARG", "S106"]  # Allow assert and unused args in tests
+"backend/src/**/*" = []
 
 [tool.ruff.lint.isort]
 known-first-party = ["fluxio"]
@@ -324,7 +339,7 @@ markers = [
 
 # Coverage configuration
 [tool.coverage.run]
-source = ["backend/fluxio"]
+source = ["backend/src/fluxio"]
 omit = [
     "*/tests/*",
     "*/test_*.py",
