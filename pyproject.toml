@@ -1,0 +1,349 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fluxio"
+dynamic = ["version"]
+description = "A modern data pipeline platform that empowers you to design, automate, and monitor complex data flows"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Kevin Mills", email = "millsks@gmail.com"}
+]
+maintainers = [
+    {name = "Kevin Mills", email = "millsks@gmail.com"}
+]
+keywords = [
+    "data-pipeline", 
+    "data-engineering", 
+    "workflow", 
+    "orchestration", 
+    "visualization", 
+    "kedro", 
+    "fastapi"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.12"
+dependencies = [
+    # Core backend framework
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "python-multipart>=0.0.6",
+    
+    # Data pipeline framework
+    "kedro>=0.19.0",
+    "kedro[pandas.CSVDataSet,pandas.ParquetDataSet,pandas.SQLQueryDataSet]",
+    
+    # Task queue and async processing
+    "arq>=0.25.0",
+    "redis>=5.0.0",
+    
+    # ML experiment tracking
+    "mlflow>=2.8.0",
+    
+    # Authentication and authorization
+    "authlib>=1.2.0",
+    "python-jose[cryptography]>=3.3.0",
+    "requests>=2.31.0",
+    
+    # Data processing and analysis
+    "pandas>=2.1.0",
+    "numpy>=1.24.0",
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.12.0",
+    
+    # Configuration and environment
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.4.0",
+    "pydantic-settings>=2.0.0",
+    
+    # Logging and monitoring
+    "structlog>=23.1.0",
+    "prometheus-client>=0.17.0",
+    
+    # API documentation (built into FastAPI)
+    "httpx>=0.25.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    # Testing
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.0",
+    "pytest-asyncio>=0.21.0",
+    
+    # Code quality
+    "ruff>=0.1.6",
+    "mypy>=1.5.0",
+    "pre-commit>=3.4.0",
+    
+    # Documentation
+    "sphinx>=7.1.0",
+    "sphinx-rtd-theme>=1.3.0",
+    "myst-parser>=2.0.0",
+]
+
+test = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.0",
+    "pytest-asyncio>=0.21.0",
+]
+
+docs = [
+    "sphinx>=7.1.0",
+    "sphinx-rtd-theme>=1.3.0",
+    "myst-parser>=2.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/millsks/fluxio"
+Documentation = "https://github.com/millsks/fluxio#readme"
+Repository = "https://github.com/millsks/fluxio"
+"Bug Tracker" = "https://github.com/millsks/fluxio/issues"
+
+[project.scripts]
+fluxio = "fluxio.cli:main"
+
+# Hatch build configuration
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.version.raw-options]
+local_scheme = "no-local-version"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "backend/src/fluxio/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["backend/src/fluxio"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/backend/src/fluxio",
+    "/README.md",
+    "/LICENSE",
+    "/pyproject.toml",
+]
+
+# Pixi configuration for environment and task management
+[tool.pixi.project]
+channels = ["conda-forge", "pyviz"]
+platforms = ["linux-64", "osx-64", "osx-arm64", "win-64"]
+
+[tool.pixi.pypi-dependencies]
+fluxio = { path = ".", editable = true }
+
+[tool.pixi.dependencies]
+python = "3.12.*"
+nodejs = ">=18.0.0"
+npm = ">=9.0.0"
+redis = ">=7.0.0"
+
+# Development dependencies via conda-forge for better performance
+[tool.pixi.feature.dev.dependencies]
+pytest = "*"
+ruff = "*"
+mypy = "*"
+pre-commit = "*"
+
+[tool.pixi.feature.docs.dependencies]
+sphinx = "*"
+sphinx_rtd_theme = "*"
+
+# Pixi tasks for development workflow
+[tool.pixi.tasks]
+# Backend tasks
+install-backend = "pip install -e ."
+install-dev = "pip install -e .[dev]"
+test = "pytest backend/tests/ -v --cov=fluxio --cov-report=html --cov-report=term-missing"
+test-quick = "pytest backend/tests/ -x --tb=short"
+lint = "ruff check backend/src/ && mypy backend/src/"
+format = "ruff format backend/src/ && ruff check --fix backend/src/"
+type-check = "mypy backend/src/"
+
+# Frontend tasks
+install-frontend = { cmd = "npm install", cwd = "frontend" }
+frontend-dev = { cmd = "npm run dev", cwd = "frontend" }
+frontend-build = { cmd = "npm run build", cwd = "frontend" }
+frontend-test = { cmd = "npm test", cwd = "frontend" }
+frontend-lint = { cmd = "npm run lint", cwd = "frontend" }
+
+# Full stack tasks
+dev = [
+    "install-backend",
+    "install-frontend",
+    { cmd = "uvicorn fluxio.app:app --reload --host 0.0.0.0 --port 8000 & npm run dev --prefix frontend & wait" }
+]
+build = ["install-backend", "frontend-build"]
+test-all = ["test", "frontend-test"]
+lint-all = ["lint", "frontend-lint"]
+
+# Infrastructure and deployment
+start-redis = "redis-server --daemonize yes"
+stop-redis = "redis-cli shutdown"
+start-mlflow = "mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlflow-artifacts --host 0.0.0.0 --port 5000"
+
+# Backend server tasks
+backend-dev = { cmd = "uvicorn fluxio.app:app --reload --host 0.0.0.0 --port 8000", env = { ENVIRONMENT = "development" }, cwd = "backend/src" }
+backend-prod = { cmd = "uvicorn fluxio.app:app --host 0.0.0.0 --port 8000", env = { ENVIRONMENT = "production" }, cwd = "backend/src" }
+worker = { cmd = "python -m arq fluxio.worker.WorkerSettings", cwd = "backend/src" }
+
+# Kedro pipeline tasks
+kedro-run = { cmd = "kedro run", cwd = "backend/src" }
+kedro-jupyter = { cmd = "kedro jupyter notebook", cwd = "backend/src" }
+kedro-viz = { cmd = "kedro viz", cwd = "backend/src" }
+
+# Documentation
+docs-build = "sphinx-build -b html docs/ docs/_build/html"
+docs-serve = "python -m http.server 8080 --directory docs/_build/html"
+
+# Database management
+db-upgrade = { cmd = "alembic upgrade head", cwd = "backend/src" }
+db-migrate = { cmd = "alembic revision --autogenerate", cwd = "backend/src" }
+
+# Environment management
+clean = "find . -type d -name '__pycache__' -exec rm -rf {} + && find . -name '*.pyc' -delete && rm -rf .pytest_cache .coverage htmlcov dist build *.egg-info"
+
+[tool.pixi.environments]
+default = { solve-group = "default" }
+dev = { features = ["dev"], solve-group = "default" }
+docs = { features = ["docs"], solve-group = "default" }
+test = { features = ["dev"], solve-group = "default" }
+
+# Ruff configuration
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+src = ["backend/src"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "ARG", # flake8-unused-arguments
+    "SIM", # flake8-simplify
+    "TCH", # flake8-type-checking
+    "PTH", # flake8-use-pathlib
+    "A",   # flake8-builtins
+    "S",   # flake8-bandit
+    "T20", # flake8-print
+]
+ignore = [
+    "S101",  # Use of assert detected
+    "S301",  # pickle can be unsafe
+    "S311",  # Standard pseudo-random generators are not suitable for security/cryptographic purposes
+    "T201",  # print found
+]
+
+[tool.ruff.lint.per-file-ignores]
+"backend/tests/**/*" = ["S101", "ARG", "S106"]  # Allow assert and unused args in tests
+"backend/src/**/*" = []
+
+[tool.ruff.lint.isort]
+known-first-party = ["fluxio"]
+known-third-party = ["kedro", "fastapi", "mlflow", "arq"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+# mypy configuration
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+show_error_codes = true
+namespace_packages = true
+explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+module = [
+    "kedro.*",
+    "mlflow.*",
+    "arq.*",
+]
+ignore_missing_imports = true
+
+# pytest configuration
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = [
+    "backend/tests",
+]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["backend/src/fluxio"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/__init__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+# Bandit security linting configuration
+[tool.bandit]
+exclude_dirs = ["backend/tests"]
+skips = ["B101", "B601"]  # Skip assert_used and shell_injection_process for tests
+
+# Pydocstyle documentation style checking
+[tool.pydocstyle]
+convention = "google"
+add_ignore = ["D100", "D104", "D107"]  # Missing docstrings in modules, packages, and __init__
+match_dir = "^(?!tests).*"  # Exclude tests directory
+
+# Codespell configuration
+[tool.codespell]
+skip = "*.git,*.pyc,*.pdf,*.svg,*.lock,*.toml"
+ignore-words-list = "nd,te,ba"
