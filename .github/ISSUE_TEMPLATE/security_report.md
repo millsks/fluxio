@@ -9,7 +9,7 @@ assignees: ''
 ## ⚠️ IMPORTANT SECURITY NOTICE ⚠️
 **For sensitive security vulnerabilities, please DO NOT create a public issue.**
 Instead, please report privately via:
-- Email: [security@yourproject.com]
+- Email: [security@example.com]
 - GitHub Security Advisories (if available)
 - Other private channel: [specify if available]
 
