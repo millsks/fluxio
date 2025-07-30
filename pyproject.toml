@@ -140,8 +140,9 @@ include = [
 
 # Pixi configuration for environment and task management
 [tool.pixi.project]
-channels = ["conda-forge", "pyviz"]
-platforms = ["linux-64", "osx-64", "osx-arm64", "win-64"]
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-64", "win-64"]
+conda-pypi-map = { "conda-forge" = "https://raw.githubusercontent.com/prefix-dev/parselmouth/refs/heads/main/files/compressed_mapping.json" }
 
 [tool.pixi.pypi-dependencies]
 fluxio = { path = ".", editable = true }
@@ -149,10 +150,8 @@ fluxio = { path = ".", editable = true }
 [tool.pixi.dependencies]
 python = "3.12.*"
 nodejs = ">=18.0.0"
-npm = ">=9.0.0"
-redis = ">=7.0.0"
 
-# Development dependencies via conda-forge for better performance
+# Minimal development tools via conda-forge
 [tool.pixi.feature.dev.dependencies]
 pytest = "*"
 ruff = "*"
@@ -182,14 +181,10 @@ frontend-test = { cmd = "npm test", cwd = "frontend" }
 frontend-lint = { cmd = "npm run lint", cwd = "frontend" }
 
 # Full stack tasks
-dev = [
-    "install-backend",
-    "install-frontend",
-    { cmd = "uvicorn fluxio.app:app --reload --host 0.0.0.0 --port 8000 & npm run dev --prefix frontend & wait" }
-]
-build = ["install-backend", "frontend-build"]
-test-all = ["test", "frontend-test"]
-lint-all = ["lint", "frontend-lint"]
+dev = { depends-on = ["install-backend", "install-frontend", "backend-dev", "frontend-dev"] }
+build = { depends-on = ["install-backend", "frontend-build"] }
+test-all = { depends-on = ["test", "frontend-test"] }
+lint-all = { depends-on = ["lint", "frontend-lint"] }
 
 # Infrastructure and deployment
 start-redis = "redis-server --daemonize yes"
