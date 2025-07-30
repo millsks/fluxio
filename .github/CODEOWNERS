@@ -1,0 +1,8 @@
+# Ownership for source code
+src/ @dev-team
+
+# Ownership for documentation
+docs/ @docs-team
+
+# Global ownership - fallback for uncategorized files
+* @millsks
